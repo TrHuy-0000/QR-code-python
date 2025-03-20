@@ -4,8 +4,7 @@ app = Flask(__name__)
 
 # Danh sách người dùng + trạng thái điểm danh
 users = {
-    "Nguyen Van A": {"stt": "001", "status": "red"},
-    "Tran Thi B": {"stt": "002", "status": "red"}
+    
 }
 
 @app.route("/")
