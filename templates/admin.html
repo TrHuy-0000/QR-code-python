@@ -4,40 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý điểm danh</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <script>
-        async function fetchStatus() {
-            let response = await fetch("/get_status");
-            let users = await response.json();
-
-            let tableBody = document.getElementById("userTable");
-            tableBody.innerHTML = ""; // Xóa dữ liệu cũ
-
-            for (let name in users) {
-                let row = `<tr>
-                    <td>${name}</td>
-                    <td>${users[name].stt}</td>
-                    <td style="background-color: ${users[name].status}; color: white;">${users[name].status === 'green' ? 'Đã điểm danh' : 'Chưa điểm danh'}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            }
-        }
-
-        setInterval(fetchStatus, 2000);  // Cập nhật mỗi 2 giây
-    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body onload="fetchStatus()">
-    <h2>Danh sách điểm danh</h2>
+<body>
+    <h2>Danh sách người dùng</h2>
     <table border="1">
         <thead>
             <tr>
                 <th>Tên</th>
                 <th>STT</th>
-                <th>Trạng thái</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody id="userTable">
+            {% for name, stt in users.items() %}
+            <tr>
+                <td>{{ name }}</td>
+                <td>{{ stt }}</td>
+                <td><button onclick="removeUser('{{ name }}')">Xóa</button></td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
+
+    <h2>Thêm người dùng</h2>
+    <input type="text" id="newName" placeholder="Nhập tên">
+    <input type="text" id="newStt" placeholder="Nhập STT">
+    <button onclick="addUser()">Thêm</button>
+
+    <script>
+        function addUser() {
+            var name = $("#newName").val();
+            var stt = $("#newStt").val();
+
+            $.ajax({
+                url: "/add_user",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ name: name, stt: stt }),
+                success: function(response) {
+                    alert(response.message);
+                    location.reload();  // Tải lại trang để cập nhật danh sách
+                }
+            });
+        }
+
+        function removeUser(name) {
+            $.ajax({
+                url: "/remove_user",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ name: name }),
+                success: function(response) {
+                    alert(response.message);
+                    location.reload();  // Tải lại trang để cập nhật danh sách
+                }
+            });
+        }
+    </script>
 </body>
 </html>

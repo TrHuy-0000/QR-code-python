@@ -2,34 +2,42 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# Danh sách người hợp lệ và trạng thái điểm danh
+# Danh sách người hợp lệ (tạm lưu trong RAM)
 valid_users = {
-    "Nguyen Van A": {"stt": "001", "status": "red"},
-    "Tran Thi B": {"stt": "002", "status": "red"}
+    "Nguyen Van A": "001",
+    "Tran Thi B": "002"
 }
 
 @app.route("/")
 def home():
-    return render_template("form.html")  # Giao diện nhập thông tin
+    return render_template("form.html")  # Trang điểm danh
 
 @app.route("/admin")
 def admin():
-    return render_template("admin.html", users=valid_users)  # Giao diện quản lý
+    return render_template("admin.html", users=valid_users)  # Trang quản lý
 
-@app.route("/submit", methods=["POST"])
-def submit():
-    name = request.form.get("name")
-    stt = request.form.get("stt")
+@app.route("/add_user", methods=["POST"])
+def add_user():
+    data = request.get_json()
+    name = data.get("name")
+    stt = data.get("stt")
 
-    if name in valid_users and valid_users[name]["stt"] == stt:
-        valid_users[name]["status"] = "green"  # Cập nhật trạng thái
-        return jsonify({"status": "success", "message": "Điểm danh thành công!", "color": "green"})
+    if name and stt:
+        valid_users[name] = stt
+        return jsonify({"status": "success", "message": "Thêm người dùng thành công!", "users": valid_users})
     else:
-        return jsonify({"status": "error", "message": "Thông tin không hợp lệ!", "color": "red"})
+        return jsonify({"status": "error", "message": "Thiếu thông tin!"})
 
-@app.route("/get_status")
-def get_status():
-    return jsonify(valid_users)  # Gửi dữ liệu danh sách cập nhật
+@app.route("/remove_user", methods=["POST"])
+def remove_user():
+    data = request.get_json()
+    name = data.get("name")
+
+    if name in valid_users:
+        del valid_users[name]
+        return jsonify({"status": "success", "message": "Xóa người dùng thành công!", "users": valid_users})
+    else:
+        return jsonify({"status": "error", "message": "Không tìm thấy người dùng!"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
