@@ -27,12 +27,10 @@
         </thead>
         <tbody id="userTable">
             {% for name, info in users.items() %}
-            <tr>
+            <tr id="row-{{ name }}">
                 <td>{{ name }}</td>
                 <td>{{ info.stt }}</td>
-                <td>
-                    <span class="status" style="background-color: {{ info.status }};"></span>
-                </td>
+                <td><span class="status" id="status-{{ name }}" style="background-color: {{ info.status }};"></span></td>
                 <td><button onclick="removeUser('{{ name }}')">Xóa</button></td>
             </tr>
             {% endfor %}
@@ -55,8 +53,16 @@
                 contentType: "application/json",
                 data: JSON.stringify({ name: name, stt: stt }),
                 success: function(response) {
-                    alert(response.message);
-                    location.reload();  // Tải lại trang để cập nhật danh sách
+                    if (response.status === "success") {
+                        $("#userTable").append(`
+                            <tr id="row-${name}">
+                                <td>${name}</td>
+                                <td>${stt}</td>
+                                <td><span class="status" id="status-${name}" style="background-color: red;"></span></td>
+                                <td><button onclick="removeUser('${name}')">Xóa</button></td>
+                            </tr>
+                        `);
+                    }
                 }
             });
         }
@@ -68,10 +74,15 @@
                 contentType: "application/json",
                 data: JSON.stringify({ name: name }),
                 success: function(response) {
-                    alert(response.message);
-                    location.reload();  // Tải lại trang để cập nhật danh sách
+                    if (response.status === "success") {
+                        $("#row-" + name).remove();
+                    }
                 }
             });
+        }
+
+        function updateStatus(name, color) {
+            $("#status-" + name).css("background-color", color);
         }
     </script>
 </body>
