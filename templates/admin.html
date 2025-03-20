@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý điểm danh</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        async function fetchStatus() {
+            let response = await fetch("/get_status");
+            let users = await response.json();
+
+            let tableBody = document.getElementById("userTable");
+            tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+            for (let name in users) {
+                let row = `<tr>
+                    <td>${name}</td>
+                    <td>${users[name].stt}</td>
+                    <td style="background-color: ${users[name].status}; color: white;">${users[name].status === 'green' ? 'Đã điểm danh' : 'Chưa điểm danh'}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            }
+        }
+
+        setInterval(fetchStatus, 2000);  // Cập nhật mỗi 2 giây
+    </script>
+</head>
+<body onload="fetchStatus()">
+    <h2>Danh sách điểm danh</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>STT</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+        </tbody>
+    </table>
+</body>
+</html>
