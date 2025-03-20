@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý điểm danh</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
     <h2>Danh sách người dùng</h2>
@@ -13,14 +21,18 @@
             <tr>
                 <th>Tên</th>
                 <th>STT</th>
+                <th>Trạng thái</th>
                 <th>Hành động</th>
             </tr>
         </thead>
         <tbody id="userTable">
-            {% for name, stt in users.items() %}
+            {% for name, info in users.items() %}
             <tr>
                 <td>{{ name }}</td>
-                <td>{{ stt }}</td>
+                <td>{{ info.stt }}</td>
+                <td>
+                    <span class="status" style="background-color: {{ info.status }};"></span>
+                </td>
                 <td><button onclick="removeUser('{{ name }}')">Xóa</button></td>
             </tr>
             {% endfor %}
