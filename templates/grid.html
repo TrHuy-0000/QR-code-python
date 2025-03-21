@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điểm danh</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .table-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .square {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 5px;
+            font-size: 14px;
+            color: white;
+        }
+
+        .red { background-color: #dc3545; }
+        .green { background-color: #28a745; }
+
+        .scrollable {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Danh sách điểm danh</h2>
+
+    <div class="table-container">
+        <div class="scrollable">
+            <table>
+                <tbody id="gridBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function loadGrid() {
+            $.getJSON("/get_users", function(data) {
+                // Sắp xếp toàn bộ danh sách theo số nguyên trước, sau đó theo số thập phân
+                data.sort((a, b) => a.integer - b.integer || parseFloat(a.decimal) - parseFloat(b.decimal));
+
+                let usersByRow = {};
+                data.forEach(user => {
+                    let row = user.integer;
+                    if (!usersByRow[row]) usersByRow[row] = [];
+                    usersByRow[row].push(user);
+                });
+
+                let rowsHtml = "";
+                for (let i = 1; i <= 100; i++) {
+                    let rowHtml = `<tr><td><strong>${i}</strong></td>`;
+                    
+                    if (usersByRow[i]) {
+                        usersByRow[i].forEach(user => {
+                            let statusClass = user.status === "green" ? "green" : "red";
+                            rowHtml += `<td><span class="square ${statusClass}">${user.decimal}</span></td>`;
+                        });
+                    }
+
+                    rowHtml += "</tr>";
+                    rowsHtml += rowHtml;
+                }
+
+                $("#gridBody").html(rowsHtml);
+            });
+        }
+
+        setInterval(loadGrid, 5000);
+        loadGrid();
+    </script>
+</body>
+</html>

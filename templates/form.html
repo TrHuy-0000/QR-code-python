@@ -4,32 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm danh</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        input, button { padding: 10px; margin: 10px; }
-        #status { font-size: 20px; margin-top: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .success { color: green; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <h2>Điểm danh</h2>
-    <form id="attendanceForm">
-        <input type="text" name="name" placeholder="Nhập tên" required>
-        <input type="text" name="stt" placeholder="Nhập STT" required>
-        <button type="submit">Gửi</button>
-    </form>
-    <p id="status"></p>
+    <div class="container">
+        <h2>Nhập thông tin để điểm danh</h2>
+        <input type="text" id="integerInput" placeholder="Nhập số nguyên" required>
+        <input type="text" id="decimalInput" placeholder="Nhập số thập phân" required>
+        <input type="text" id="nameInput" placeholder="Nhập họ và tên" required>
+        <button onclick="checkUser()">Xác nhận</button>
+        <p id="message" class="message"></p>
+    </div>
 
     <script>
-        document.getElementById("attendanceForm").onsubmit = async function(event) {
-            event.preventDefault();
-            let formData = new FormData(this);
-            let response = await fetch("/submit", { method: "POST", body: formData });
-            let result = await response.json();
+        function checkUser() {
+            let integer = $("#integerInput").val().trim().replace(/\s+/g, ""); // Xóa khoảng trắng dư
+            let decimal = $("#decimalInput").val().trim().replace(/\s+/g, ""); // Xóa khoảng trắng dư
+            let name = $("#nameInput").val().trim().replace(/\s+/g, " "); // Xóa khoảng trắng dư, giữ lại 1 khoảng giữa các từ
+        
+            if (integer === "" || decimal === "" || name === "") {
+                $("#message").text("Vui lòng nhập đầy đủ thông tin!").addClass("error").removeClass("success");
+                return;
+            }
 
-            let statusText = document.getElementById("status");
-            statusText.innerText = result.message;
-            statusText.style.color = result.color;
+            $.ajax({
+                url: "/check_user",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ integer: integer, decimal: decimal, name: name }),
+                success: function(response) {
+                    $("#message").text(response.message).addClass("success").removeClass("error");
+                },
+                error: function(xhr) {
+                    $("#message").text("Lỗi: " + xhr.responseJSON.message).addClass("error").removeClass("success");
+                }
+            });
         }
+
+        // Nhấn Enter để gửi form nhanh hơn
+        $("input").keypress(function(event) {
+            if (event.which === 13) {
+                checkUser();
+            }
+        });
     </script>
 </body>
 </html>

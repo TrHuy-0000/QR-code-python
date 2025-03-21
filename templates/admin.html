@@ -3,87 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý điểm danh</title>
+    <title>Quản lý điểm danh - Admin</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .status {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+            width: 80%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status-box {
             width: 20px;
             height: 20px;
-            border-radius: 50%;
             display: inline-block;
+            border-radius: 50%;
         }
+
+        .red { background-color: red; }
+        .green { background-color: green; }
     </style>
 </head>
 <body>
-    <h2>Danh sách người dùng</h2>
-    <table border="1">
+    <h2>Quản lý điểm danh</h2>
+
+    <div class="container">
+        <input type="text" id="integerInput" placeholder="Nhập số nguyên" required>
+        <input type="text" id="decimalInput" placeholder="Nhập số thập phân" required>
+        <input type="text" id="nameInput" placeholder="Nhập họ và tên" required>
+        <button onclick="addUser()">Thêm</button>
+    </div>
+
+    <table>
         <thead>
             <tr>
-                <th>Tên</th>
-                <th>STT</th>
+                <th>Số nguyên</th>
+                <th>Số thập phân</th>
+                <th>Họ và tên</th>
                 <th>Trạng thái</th>
-                <th>Hành động</th>
+                <th>Xóa</th>
             </tr>
         </thead>
-        <tbody id="userTable">
-            {% for name, info in users.items() %}
-            <tr id="row-{{ name }}">
-                <td>{{ name }}</td>
-                <td>{{ info.stt }}</td>
-                <td><span class="status" id="status-{{ name }}" style="background-color: {{ info.status }};"></span></td>
-                <td><button onclick="removeUser('{{ name }}')">Xóa</button></td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tbody id="userList"></tbody>
     </table>
 
-    <h2>Thêm người dùng</h2>
-    <input type="text" id="newName" placeholder="Nhập tên">
-    <input type="text" id="newStt" placeholder="Nhập STT">
-    <button onclick="addUser()">Thêm</button>
-
     <script>
-        function addUser() {
-            var name = $("#newName").val();
-            var stt = $("#newStt").val();
+        function loadUsers() {
+            $.getJSON("/get_users", function(data) {
+                // Sắp xếp theo số nguyên, sau đó theo số thập phân
+                data.sort((a, b) => a.integer - b.integer || parseFloat(a.decimal) - parseFloat(b.decimal));
 
+                let rows = "";
+                data.forEach(user => {
+                    let statusClass = user.status === "green" ? "green" : "red";
+                    rows += `<tr>
+                        <td>${user.integer}</td>
+                        <td>${user.decimal}</td>
+                        <td>${user.name}</td>
+                        <td><span class="status-box ${statusClass}"></span></td>
+                        <td><button onclick="deleteUser(${user.id})">Xóa</button></td>
+                    </tr>`;
+                });
+
+                $("#userList").html(rows);
+            });
+        }
+
+        function addUser() {
+            let integer = $("#integerInput").val().trim();
+            let decimal = $("#decimalInput").val().trim();
+            let name = $("#nameInput").val().trim();
+        
+            if (integer === "" || decimal === "" || name === "") {
+                alert("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+        
             $.ajax({
                 url: "/add_user",
                 type: "POST",
                 contentType: "application/json",
-                data: JSON.stringify({ name: name, stt: stt }),
-                success: function(response) {
-                    if (response.status === "success") {
-                        $("#userTable").append(`
-                            <tr id="row-${name}">
-                                <td>${name}</td>
-                                <td>${stt}</td>
-                                <td><span class="status" id="status-${name}" style="background-color: red;"></span></td>
-                                <td><button onclick="removeUser('${name}')">Xóa</button></td>
-                            </tr>
-                        `);
-                    }
+                data: JSON.stringify({ integer: integer, decimal: decimal, name: name }),
+                success: function() {
+                    $("#integerInput").val(""); 
+                    $("#decimalInput").val(""); 
+                    $("#nameInput").val(""); 
+                    loadUsers(); // Cập nhật danh sách ngay khi thêm xong
+                },
+                error: function(xhr) {
+                    alert("Lỗi: " + xhr.responseJSON.message);
                 }
             });
         }
 
-        function removeUser(name) {
+        function deleteUser(userId) {
+            if (!confirm("Bạn có chắc chắn muốn xóa?")) return;
+        
             $.ajax({
-                url: "/remove_user",
+                url: "/delete_user",
                 type: "POST",
                 contentType: "application/json",
-                data: JSON.stringify({ name: name }),
-                success: function(response) {
-                    if (response.status === "success") {
-                        $("#row-" + name).remove();
-                    }
+                data: JSON.stringify({ id: userId }),
+                success: function() {
+                    loadUsers(); // Cập nhật danh sách ngay khi xóa
+                },
+                error: function(xhr) {
+                    alert("Lỗi khi xóa: " + xhr.responseJSON.message);
                 }
             });
         }
 
-        function updateStatus(name, color) {
-            $("#status-" + name).css("background-color", color);
-        }
+        $(document).ready(function() {
+            loadUsers();
+            setInterval(loadUsers, 5000);
+
+            // Nhấn Enter để thêm dữ liệu
+            $("input").keypress(function(event) {
+                if (event.which === 13) {
+                    addUser();
+                }
+            });
+        });
     </script>
 </body>
 </html>
