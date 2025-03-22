@@ -78,8 +78,8 @@
     <h2>Quản lý điểm danh</h2>
 
     <div class="container">
-        <input type="text" id="integerInput" placeholder="Nhập số nguyên" required>
-        <input type="text" id="decimalInput" placeholder="Nhập số thập phân" required>
+        <input type="text" id="integerInput" placeholder="Nhập số danh mục khen thưởngthưởng" required>
+        <input type="text" id="decimalInput" placeholder="Nhập số thứ tự (VD: 1,1)" required>
         <input type="text" id="nameInput" placeholder="Nhập họ và tên" required>
         <button onclick="addUser()">Thêm</button>
     </div>
@@ -93,11 +93,43 @@
                 <th>Trạng thái</th>
                 <th>Xóa</th>
             </tr>
+            <div class="container">
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+                <button onclick="uploadExcel()">Upload Excel</button>
+            </div>
         </thead>
         <tbody id="userList"></tbody>
     </table>
 
     <script>
+
+        function uploadExcel() {
+            let file = $("#excelFile")[0].files[0]; // Lấy file đã chọn
+            if (!file) {
+                alert("Vui lòng chọn file Excel!");
+                return;
+            }
+    
+            let formData = new FormData();
+            formData.append("file", file);
+    
+            $.ajax({
+                url: "/upload_excel",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert("Tải lên thành công!");
+                    loadUsers(); // Cập nhật danh sách sau khi upload
+                },
+                error: function(xhr) {
+                    alert("Lỗi khi upload: " + xhr.responseJSON.message);
+                }
+            });
+        }
+
+
         function loadUsers() {
             $.getJSON("/get_users", function(data) {
                 // Sắp xếp theo số nguyên, sau đó theo số thập phân

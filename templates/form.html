@@ -21,11 +21,25 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 300px;
+            width: 400px;
         }
         h2 {
             margin-bottom: 20px;
             color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
         }
         input {
             width: 100%;
@@ -38,7 +52,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #28a745;
+            background: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -59,9 +73,28 @@
 </head>
 <body>
     <div class="container">
+        <!-- Bảng hiển thị danh mục khen thưởng -->
+        <table>
+            <tr>
+                <th colspan="2">Danh mục khen thưởng</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Khen thưởng Xuân tình nguyện</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Khen thưởng Thanh niên tiên tiến làm theo lời Bác</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Khen thưởng Cán bộ đoàn - Hội tiêu biểu cấp trường</td>
+            </tr>
+        </table>
+
         <h2>Nhập thông tin để điểm danh</h2>
-        <input type="text" id="integerInput" placeholder="Nhập số nguyên" required>
-        <input type="text" id="decimalInput" placeholder="Nhập số thập phân" required>
+        <input type="text" id="integerInput" placeholder="Nhập số danh mục khen thưởng" required>
+        <input type="text" id="decimalInput" placeholder="Nhập số thứ tự (VD: 1,1)" required>
         <input type="text" id="nameInput" placeholder="Nhập họ và tên" required>
         <button onclick="checkUser()">Xác nhận</button>
         <p id="message" class="message"></p>

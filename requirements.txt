@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 Flask-CORS
 Flask-Migrate
 gunicorn
+openpyxl
