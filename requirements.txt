@@ -1,4 +1,5 @@
 Flask
+pandas==2.2.3
 Flask-SQLAlchemy
 Flask-CORS
 Flask-Migrate
